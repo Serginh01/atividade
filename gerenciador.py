@@ -1,53 +1,74 @@
-from typing import List, Dict
-
-
-# Criamos uma classe para representar tarefas, em vez de usar dicionários anônimos.
-class Tarefa:
-    def _init_(self, descricao: str):
-        self.descricao = descricao.strip().capitalize()  # Melhor formatação automática
-        self.concluida = False
-
-    def concluir(self):
-        self.concluida = True
-
-    def _repr_(self):
-        status = "✓" if self.concluida else "✗"
-        return f"[{status}] {self.descricao}"
-
-
 class GerenciadorDeTarefas:
     def _init_(self):
-        # Dicionário que mapeia nomes de usuários para listas de tarefas
-        # Agora usamos uma tipagem explícita para facilitar leitura e debugging
-        self._usuarios: Dict[str, List[Tarefa]] = {}
+        # Dicionário que mapeia o nome do usuário para sua lista de tarefas
+        self.usuarios = {}
 
-    def adicionar_usuario(self, nome: str) -> None:
-        # Ao invés de usar 'print', usamos exceções para indicar erro — mais profissional e fácil de testar
-        if nome in self._usuarios:
-            raise ValueError(f"Usuário '{nome}' já existe.")
-        self._usuarios[nome] = []
+    def adicionar_usuario(self, nome):
+        # Verifica se o nome já existe
+        if not isinstance(nome, str) or not nome.strip():
+            print("Nome de usuário inválido.")
+            return
 
-    def adicionar_tarefa(self, nome: str, descricao: str) -> None:
-        if nome not in self._usuarios:
-            raise KeyError(f"Usuário '{nome}' não encontrado.")
+        nome = nome.strip()
 
-        # Usamos a classe Tarefa ao invés de um dicionário comum
-        tarefa = Tarefa(descricao)
-        self._usuarios[nome].append(tarefa)
+        if nome in self.usuarios:
+            print(f"Usuário '{nome}' já existe.")
+        else:
+            self.usuarios[nome] = []
+            print(f"Usuário '{nome}' adicionado com sucesso.")
 
-    def concluir_tarefa(self, nome: str, indice: int) -> None:
-        if nome not in self._usuarios:
-            raise KeyError(f"Usuário '{nome}' não encontrado.")
+    def adicionar_tarefa(self, nome, descricao):
+        # Verificações básicas de entrada
+        if not isinstance(descricao, str) or not descricao.strip():
+            print("Descrição da tarefa inválida.")
+            return
+
+        nome = nome.strip()
+        descricao = descricao.strip().capitalize()
+
+        if nome not in self.usuarios:
+            print(f"Usuário '{nome}' não encontrado.")
+            return
+
+        # Cria a tarefa como um dicionário
+        nova_tarefa = {
+            "descricao": descricao,
+            "concluida": False
+        }
+        self.usuarios[nome].append(nova_tarefa)
+        print(f"Tarefa adicionada para o usuário '{nome}': {descricao}")
+
+    def concluir_tarefa(self, nome, indice):
+        nome = nome.strip()
+
+        if nome not in self.usuarios:
+            print(f"Usuário '{nome}' não encontrado.")
+            return
+
+        if not isinstance(indice, int):
+            print("Índice de tarefa inválido.")
+            return
 
         try:
-            self._usuarios[nome][indice].concluir()
+            self.usuarios[nome][indice]["concluida"] = True
+            print(f"Tarefa {indice} do usuário '{nome}' marcada como concluída.")
         except IndexError:
-            raise IndexError(f"Tarefa de índice {indice} não existe para o usuário '{nome}'.")
+            print(f"Tarefa de índice {indice} não existe para o usuário '{nome}'.")
 
-    def listar_tarefas(self, nome: str, apenas_pendentes: bool = False) -> List[Tarefa]:
-        if nome not in self._usuarios:
-            raise KeyError(f"Usuário '{nome}' não encontrado.")
+    def listar_tarefas(self, nome, apenas_pendentes=False):
+        nome = nome.strip()
 
-        tarefas = self._usuarios[nome]
-        # Se apenas_pendentes for True, filtramos as tarefas não concluídas
-        return [t for t in tarefas if not t.concluida] if apenas_pendentes else tarefas
+        if nome not in self.usuarios:
+            print(f"Usuário '{nome}' não encontrado.")
+            return []
+
+        tarefas = self.usuarios[nome]
+        resultado = []
+
+        for i, tarefa in enumerate(tarefas):
+            if apenas_pendentes and tarefa["concluida"]:
+                continue
+            status = "✓" if tarefa["concluida"] else "✗"
+            resultado.append(f"{i}. [{status}] {tarefa['descricao']}")
+
+        return resultado
