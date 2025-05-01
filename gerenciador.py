@@ -1,6 +1,6 @@
 class GerenciadorDeTarefas:
     def _init_(self):
-        # Dicionário: nome do usuário -> lista de tarefas
+        # Dicionário: nome do usuário -> lista de tarefas (cada tarefa é um dicionário)
         self.usuarios = {}
 
     def adicionar_usuario(self, nome):
